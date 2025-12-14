@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aditya Narayan Verma | Portfolio</title>
+    <style>
+        :root {
+            /* Darker Background */
+            --bg-color: #050505;
+            --text-color: #ffffff;
+            --text-muted: #b3b3b3;
+            --accent: #00ffcc;
+            --secondary: #bd00ff;
+            /* Increased opacity for better readability */
+            --glass: rgba(20, 20, 20, 0.6); 
+            --border: rgba(255, 255, 255, 0.15);
+            --font-main: 'Inter', sans-serif;
+            --font-display: 'Syncopate', sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f4f4f4;
+            --text-color: #111111;
+            --text-muted: #444444;
+            --accent: #0051ff;
+            --secondary: #ff0055;
+            --glass: rgba(255, 255, 255, 0.6);
+            --border: rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        /* --- WEBGL CANVAS --- */
+        #liquid-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            /* Reduced opacity so text is more readable */
+            opacity: 0.4; 
+        }
+
+        /* --- CUSTOM CURSOR --- */
+        .cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.2s, height 0.2s, background 0.2s;
+            mix-blend-mode: difference;
+        }
+        
+        .cursor.hovered {
+            background: var(--accent);
+            width: 50px;
+            height: 50px;
+            opacity: 0.5;
+            border: none;
+        }
+
+        /* --- LAYOUT & TYPOGRAPHY --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syncopate:wght@700&display=swap');
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 0;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+        }
+
+        /* Theme Icon Button */
+        .theme-toggle {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .theme-toggle:hover { 
+            border-color: var(--accent); 
+            color: var(--accent);
+            transform: rotate(15deg);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        /* Larger Photo */
+        .profile-photo {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--accent);
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.15);
+            transition: transform 0.3s;
+        }
+        .profile-photo:hover { transform: scale(1.05); }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            line-height: 1.1;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: -2px;
+        }
+
+        .role {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .contact-pill {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 40px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .contact-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .contact-pill a, .contact-pill span {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+        }
+        .contact-pill a:hover { color: var(--accent); }
+        .address { color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 5px;}
+
+        /* --- SECTIONS --- */
+        section { padding: 80px 0; }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: var(--text-color);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+            display: inline-block;
+        }
+
+        /* --- GRID SYSTEM --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 30px;
+            border-radius: 12px;
+            transition: transform 0.3s, border-color 0.3s, background 0.3s;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="light"] .card:hover { background: rgba(0,0,0,0.05); }
+
+        .card h3 { font-size: 1.4rem; margin-bottom: 8px; color: var(--text-color); }
+        .card .subtitle { color: var(--accent); font-size: 0.9rem; margin-bottom: 15px; display: block; font-weight: 600; }
+        .card p, .card li { 
+            font-size: 0.95rem; 
+            line-height: 1.6; 
+            color: var(--text-muted); 
+            margin-bottom: 8px;
+        }
+        .card ul { margin-left: 20px; }
+
+        /* --- CATEGORIZED SKILLS --- */
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .skill-category h3 {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border-left: 3px solid var(--secondary);
+            padding-left: 10px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: 0.3s;
+        }
+        .skill-tag:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 50px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .profile-photo { width: 180px; height: 180px; }
+            .contact-row { flex-direction: column; align-items: center; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="liquid-canvas"></canvas>
+    
+    <div class="cursor"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo hover-trigger">ANV</div>
+            <button class="theme-toggle hover-trigger" onclick="toggleTheme()" id="themeBtn">
+                *
+            </button>
+        </header>
+
+        <section class="hero">
+            <img src="Gemini_Generated_Image_q9allcq9allcq9al.png" alt="Aditya Narayan Verma" class="profile-photo hover-trigger">
+            
+            <h1>Aditya Narayan<br>Verma</h1>
+            <div class="role">Software Developer</div>
+            
+            <div class="contact-pill">
+                <div class="contact-row">
+                    <a href="mailto:adityaxxx2003@gmail.com" class="hover-trigger">adityaxxx2003@gmail.com</a>
+                    <span>|</span>
+                    <a href="tel:+918707229260" class="hover-trigger">+91 8707229260</a>
+                    <span>|</span>
+                    <a href="https://github.com/xander1450" target="_blank" class="hover-trigger">GitHub</a>
+                </div>
+                <div class="address">Horamavu, Bengaluru, Karnataka, 560043</div>
+            </div>
+        </section>
+
+        <section id="experience">
+            <h2>Professional Experience</h2>
+            <div class="grid">
+                <div class="card hover-trigger">
+                    <h3>Headout</h3>
+                    <span class="subtitle">Software Engineer | Jul 2024 - Present</span>
+                    <ul>
+                        <li>Internal tool developer designing full-stack apps to support ops.</li>
+                        <li>Deployed 10+ full-stack tools to streamline workflows.</li>
+                        <li>Built automated workflows reducing manual effort.</li>
+                    </ul>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>HighRadius</h3>
+                    <span class="subtitle">Product Engineer | May 2023 - Jul 2023</span>
+                    <ul>
+                        <li>Engineered AI-Enabled Fin-Tech B2B Order Management App.</li>
+                        <li>Bridged gap between product dev and management.</li>
+                        <li>Technical expertise in AI/ML and customer needs.</li>
+                    </ul>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>SmartEd</h3>
+                    <span class="subtitle">Business Dev. Associate | June 2024</span>
+                    <p>Drove strategic partnerships, identified growth opportunities, and expanded client base via targeted outreach.</p>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>Teachnook</h3>
+                    <span class="subtitle">Brand Executive | Aug 2023 - Dec 2023</span>
+                    <p>Executed brand strategies increasing visibility and student enrollments via digital and offline channels.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>Projects</h2>
+            <div class="grid">
+                <div class="card hover-trigger">
+                    <h3>BAF</h3>
+                    <span class="subtitle">Booking Failure Automation</span>
+                    <p>An automation workflow that tracks all failed booking actions, sends emails/Slack pings, and creates Zendesk tickets. Includes an analytics dashboard for monitoring failure trends.</p>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>Fin-Tech AI Order Manager</h3>
+                    <span class="subtitle">AI-Enabled B2B Application</span>
+                    <p>B2B Order Management Application using regression models to predict if order payments will be delayed. Enhances financial planning and risk assessment.</p>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>Ticketing App</h3>
+                    <span class="subtitle">Internal System</span>
+                    <p>Creates tickets for different teams, sends instant Slack alerts, and auto-generates Zendesk tickets to streamline incident reporting.</p>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>Invoice Generator</h3>
+                    <span class="subtitle">Automated Finance Tool</span>
+                    <p>Generates invoices for vendors, emails them, and logs in Zendesk. Includes a dashboard to monitor payments and financial status.</p>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>Finance Recon App</h3>
+                    <span class="subtitle">Discrepancy Detector</span>
+                    <p>Reconciliation tool that detects discrepancies between invoices and received payments, highlighting mismatches for corrective action.</p>
+                </div>
+                <div class="card hover-trigger">
+                    <h3>Xold</h3>
+                    <span class="subtitle">Android Marketplace</span>
+                    <p>App for buying/selling items with user profiles, chat notifications, Google Maps integration, and OAuth login.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills">
+            <h2>Technical Skills</h2>
+            <div class="skills-container">
+                
+                <div class="skill-category hover-trigger">
+                    <h3>Languages</h3>
+                    <div class="tags">
+                        <span class="skill-tag">Java</span>
+                        <span class="skill-tag">Kotlin</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">C</span>
+                        <span class="skill-tag">C++</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">TypeScript</span>
+                    </div>
+                </div>
+
+                <div class="skill-category hover-trigger">
+                    <h3>Frontend</h3>
+                    <div class="tags">
+                        <span class="skill-tag">React.js</span>
+                        <span class="skill-tag">HTML/CSS</span>
+                        <span class="skill-tag">Bootstrap</span>
+                        <span class="skill-tag">UI/UX Design</span>
+                        <span class="skill-tag">Figma</span>
+                        <span class="skill-tag">Material Design</span>
+                    </div>
+                </div>
+
+                <div class="skill-category hover-trigger">
+                    <h3>Backend & DB</h3>
+                    <div class="tags">
+                        <span class="skill-tag">Node.js</span>
+                        <span class="skill-tag">Express.js</span>
+                        <span class="skill-tag">PostgreSQL</span>
+                        <span class="skill-tag">MySQL</span>
+                        <span class="skill-tag">Firebase</span>
+                        <span class="skill-tag">SQLite/Room</span>
+                        <span class="skill-tag">RESTful APIs</span>
+                        <span class="skill-tag">Webhooks</span>
+                    </div>
+                </div>
+
+                <div class="skill-category hover-trigger">
+                    <h3>DevOps & Tools</h3>
+                    <div class="tags">
+                        <span class="skill-tag">Git & GitHub</span>
+                        <span class="skill-tag">Docker</span>
+                        <span class="skill-tag">CI/CD (GitHub Actions)</span>
+                        <span class="skill-tag">Postman</span>
+                        <span class="skill-tag">Google Play Console</span>
+                        <span class="skill-tag">Gradle</span>
+                        <span class="skill-tag">Retool</span>
+                        <span class="skill-tag">Replit</span>
+                    </div>
+                </div>
+
+                <div class="skill-category hover-trigger">
+                    <h3>Others & Workflow</h3>
+                    <div class="tags">
+                        <span class="skill-tag">n8n</span>
+                        <span class="skill-tag">Zapier</span>
+                        <span class="skill-tag">Zendesk API</span>
+                        <span class="skill-tag">Workflow Automation</span>
+                        <span class="skill-tag">Agile/Scrum</span>
+                        <span class="skill-tag">MVVM/MVC</span>
+                        <span class="skill-tag">Unit Testing (Jest, Mockito)</span>
+                        <span class="skill-tag">SOLID Principles</span>
+                        <span class="skill-tag">OAuth</span>
+                        <span class="skill-tag">Payment Gateways</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2025 Aditya Narayan Verma. All Rights Reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- THEME TOGGLE LOGIC ---
+        function toggleTheme() {
+            const doc = document.documentElement;
+            const btn = document.getElementById('themeBtn');
+            const current = doc.getAttribute('data-theme');
+            
+            if (current === 'light') {
+                doc.setAttribute('data-theme', 'dark');
+                btn.innerHTML = '☀'; // Sun icon for dark mode
+            } else {
+                doc.setAttribute('data-theme', 'light');
+                btn.innerHTML = '☾'; // Moon icon for light mode
+            }
+        }
+
+        // Set default based on preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            toggleTheme(); // Switch to light if system is light
+        }
+
+        // --- CUSTOM CURSOR ---
+        const cursor = document.querySelector('.cursor');
+        const triggers = document.querySelectorAll('.hover-trigger, a, button');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        triggers.forEach(trigger => {
+            trigger.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+            trigger.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+        });
+
+        // --- WEBGL LIQUID SHADER LOGIC ---
+        const canvas = document.getElementById('liquid-canvas');
+        const gl = canvas.getContext('webgl');
+
+        if (!gl) { console.error('WebGL not supported'); }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const vsSource = `attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }`;
+
+        const fsSource = `
+            precision mediump float;
+            uniform vec2 u_resolution;
+            uniform vec2 u_mouse;
+            uniform float u_time;
+
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+            float snoise(vec2 v) {
+                const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+                vec2 i  = floor(v + dot(v, C.yy) );
+                vec2 x0 = v - i + dot(i, C.xx);
+                vec2 i1;
+                i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                vec4 x12 = x0.xyxy + C.xxzz;
+                x12.xy -= i1;
+                i = mod289(i);
+                vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                m = m*m ;
+                m = m*m ;
+                vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                vec3 h = abs(x) - 0.5;
+                vec3 ox = floor(x + 0.5);
+                vec3 a0 = x - ox;
+                m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                vec3 g;
+                g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                return 130.0 * dot(m, g);
+            }
+
+            void main() {
+                vec2 st = gl_FragCoord.xy / u_resolution.xy;
+                st.x *= u_resolution.x / u_resolution.y;
+                vec2 mouse = u_mouse / u_resolution.xy;
+                mouse.x *= u_resolution.x / u_resolution.y;
+                float dist = distance(st, mouse);
+                float time = u_time * 0.4; // Slower flow
+                float noise = snoise(st * 2.5 + time); // Larger waves
+                float mouseEffect = smoothstep(0.3, 0.0, dist);
+                
+                // Darker Liquid Colors
+                vec3 color1 = vec3(0.05, 0.2, 0.3); // Deep Cyan
+                vec3 color2 = vec3(0.2, 0.0, 0.3); // Deep Purple
+                
+                vec3 finalColor = mix(color1, color2, noise + mouseEffect);
+                float alpha = 0.8 + (noise * 0.2); // More solid
+                gl_FragColor = vec4(finalColor, alpha);
+            }
+        `;
+
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        const positionLocation = gl.getAttribLocation(program, "position");
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        const uResolution = gl.getUniformLocation(program, "u_resolution");
+        const uMouse = gl.getUniformLocation(program, "u_mouse");
+        const uTime = gl.getUniformLocation(program, "u_time");
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = window.innerHeight - e.clientY;
+        });
+
+        function render(time) {
+            gl.uniform2f(uResolution, canvas.width, canvas.height);
+            gl.uniform2f(uMouse, mouseX, mouseY);
+            gl.uniform1f(uTime, time * 0.001);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+    </script>
+</body>
+</html>
